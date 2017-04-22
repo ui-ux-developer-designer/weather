@@ -1,0 +1,139 @@
+<dom-module id="current-weather">
+    <template>
+        <style>
+            spinner,
+            spinner:after {
+                border-radius: 50%;
+                width: 10em;
+                height: 10em;
+            }
+
+            spinner {
+                font-size: 10px;
+                position: relative;
+                text-indent: -9999em;
+                border-top: 1.1em solid rgba(255, 255, 255, 0.2);
+                border-right: 1.1em solid rgba(255, 255, 255, 0.2);
+                border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
+                border-left: 1.1em solid #ffffff;
+                transform: translateZ(0);
+                animation: load8 1.1s infinite linear;
+            }
+
+            @keyframes load8 {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes load {
+                0% {
+                    transform: translateY(50%);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateY(0);
+                }
+            }
+
+             :host {
+                background: dimgray;
+                margin: 2rem;
+                min-width: 20rem;
+                animation: 1s load;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 2rem;
+                position: relative;
+            }
+
+            img {
+                flex-shrink: 0;
+            }
+
+             :host([status=loaded]) spinner {
+                display: none;
+            }
+
+            name {
+                font-size: 1.6rem;
+            }
+
+            country {
+                font-size: 1.2rem;
+            }
+            remove {
+                color: lightgray;
+                position: absolute;
+                right: 2rem;
+                cursor: pointer;
+                /*background-color: gray;*/
+                line-height: 1;
+                font-size: 1.5rem;
+                width: .8rem;
+                height: 1rem;
+                padding: 0 0 .3rem .3rem;
+            }
+        </style>
+        <spinner></spinner>
+        <name>[[searchResult.location.name]]</name>
+        <country>[[searchResult.location.country]]</country>
+        <div>[[searchResult.current.condition.text]]</div>
+        <img src="[[searchResult.current.condition.icon]]" width=64 alt="">
+        <div>[[searchResult.current.temp_c]]</div>
+        <remove on-click="handleRemove">x</remove>
+        <iron-ajax auto url="https://api.apixu.com/v1/current.json" params="[[params]]" handle-as="json" on-response="handleResponse"
+            debounce-duration="300"></iron-ajax>
+    </template>
+    <script>
+        class CurrentWeather extends Polymer.Element {
+            static get is() {
+                return `current-weather`
+            }
+
+            static get properties() {
+                return {
+                    city: {
+                        type: String,
+                        observer: 'cityChanged'
+                    },
+                    params: {
+                        type: Object,
+                        value: function () {
+                            return { "key": "ad572697a0b845f49a1170333172004" }
+                        }
+
+                    },
+                    status: {
+                        type: String,
+                        reflectToAttribute: true,
+                        value: 'loading'
+                    }
+                }
+            }
+
+            constructor() {
+                super()
+            }
+
+            cityChanged() {
+                this.params.q = this.city
+            }
+
+            handleRemove() {
+                this.remove();
+            }
+
+            handleResponse(e) {
+                console.log(e.detail.response)
+                this.searchResult = e.detail.response;
+                this.status = 'loaded'
+            }
+        }
+        customElements.define(CurrentWeather.is, CurrentWeather);
+    </script>
+</dom-module>

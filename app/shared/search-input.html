@@ -1,0 +1,180 @@
+<dom-module id="search-input">
+    <template>
+        <style>
+             :host {
+                display: block;
+                position: relative;
+                z-index: 10;
+            }
+
+            input[type="text"] {
+                padding: 2rem;
+                width: 100%;
+                box-sizing: border-box;
+                font-size: inherit;
+                min-width: 240px;
+                flex-grow: 1;
+                flex-shrink: 0;
+                border: 0;
+                outline: 0;
+            }
+
+            spinner,
+            spinner:after {
+                border-radius: 50%;
+                width: 2rem;
+                height: 2rem;
+            }
+
+            spinner {
+                font-size: 10px;
+                position: absolute;
+                right: 2rem;
+                top: 2rem;
+                text-indent: -9999em;
+                border-top: .5em solid rgba(100, 100, 100, 0.2);
+                border-right: .5em solid rgba(100, 100, 100, 0.2);
+                border-bottom: .5em solid rgba(100, 100, 100, 0.2);
+                border-left: .5em solid black;
+                transform: translateZ(0);
+                animation: load8 .7s infinite linear;
+            }
+
+             :host([status=loaded]) spinner {
+                display: none;
+            }
+
+            @keyframes load8 {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes load {
+                0% {
+                    transform: translateY(50%);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            search-result-list {
+                top: 100%;
+                left: 0;
+                position: absolute;
+                overflow: auto;
+                display: flex;
+                flex-direction: column;
+                max-height: 50rem;
+                width: 100%;
+                background: black;
+                animation: load .5s forwards;
+            }
+
+            search-result {
+                background: black;
+                padding: 2rem;
+                transition: .5s all;
+                animation: load .5s forwards;
+                opacity: 0;
+                box-sizing: border-box;
+                flex-shrink: 0;
+            }
+
+            search-result:nth-of-type(1n) {
+                animation-delay: .3s;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            search-result:hover {
+                background: lightgray;
+                color: black;
+            }
+
+            span {
+                pointer-events: none;
+            }
+        </style>
+        <input type="text" placeholder="{{placeholder}}" value="{{newSearch::input}}">
+        <spinner></spinner>
+        <search-result-list>
+            <template is="dom-repeat" items="[[searchResult]]">
+                <search-result on-click="handleClick" name="[[item.name]]">[[item.name]]<span>+</span></search-result>
+            </template>
+        </search-result-list>
+        <iron-ajax auto url="https://api.apixu.com/v1/search.json" params="[[params]]" handle-as="json" on-response="handleResponse"
+            on-error="handleError" debounce-duration="300"></iron-ajax>
+    </template>
+    <script>
+        class SearchInput extends Polymer.Element {
+            static get is() {
+                return `search-input`
+            }
+
+            static get properties() {
+                return {
+                    params: {
+                        type: Object,
+                        value: function () {
+                            return { "key": "ad572697a0b845f49a1170333172004" }
+                        }
+                    },
+                    newSearch: {
+                        type: String,
+                        observer: 'newSearchObserver'
+                    },
+                    searchResult: {
+                        type: Array,
+                        value: []
+                    },
+                    status: {
+                        type: String,
+                        reflectToAttribute: true,
+                        value: 'loaded'
+                    },
+                    placeholder: {
+                        type: String
+                    }
+                }
+            }
+
+            constructor() {
+                super()
+            }
+
+            newSearchObserver(newSearch) {
+                if (newSearch.length >= 3) {
+                    this.params = { q: newSearch, key: "ad572697a0b845f49a1170333172004" };
+                    this.status = 'loading';
+                } else {
+                    this.searchResult = [];
+                    this.status = 'loaded';
+                }
+            }
+
+            handleClick(e) {
+                this.dispatchEvent(new CustomEvent('add-new-city', { detail: { city: e.target.name } }));
+                this.newSearch = '';
+                this.searchResult = [];
+            }
+
+            handleResponse(e) {
+                console.log(e.detail.response)
+                this.searchResult = e.detail.response;
+                this.status = 'loaded'
+            }
+            handleError(e) {
+                console.log(e.detail.error)
+                this.status = 'loaded'
+            }
+        }
+        customElements.define(SearchInput.is, SearchInput);
+    </script>
+</dom-module>

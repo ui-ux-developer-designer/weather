@@ -1,0 +1,10 @@
+{
+  "name": "cv-polymer",
+  "dependencies": {
+    "ua-parser-js": "^0.7.12",
+    "polymer": "2.0.0-rc.2",
+    "app-route": "PolymerElements/app-route#2.0-preview",
+    "iron-pages": "PolymerElements/iron-pages#2.0-preview",
+    "app-localize-behavior": "PolymerElements/app-localize-behavior#2.0-preview"
+  }
+}
