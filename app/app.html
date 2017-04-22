@@ -33,12 +33,16 @@
                     language: {
                         value: 'sv'
                     },
-                    resource: {
-                        "en": {
-                            "SEARCH_PLACEHOLDER": "Type the city name"
-                        },
-                        "sv": {
-                            "SEARCH_PLACEHOLDER": "Skriv stadens namn"
+                    resources: {
+                        value: function () {
+                            return {
+                                "en": {
+                                    "SEARCH_PLACEHOLDER": "Type the city name"
+                                },
+                                "sv": {
+                                    "SEARCH_PLACEHOLDER": "Skriv stadens namn"
+                                }
+                            }
                         }
                     }
                 };
